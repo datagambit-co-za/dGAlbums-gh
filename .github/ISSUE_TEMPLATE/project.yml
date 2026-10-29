@@ -1,0 +1,45 @@
+name: New project
+description: Start tracking a project in dG Albums.
+labels: [project]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The issue **title** is the project name. Edit this issue at any time to change the details.
+        People can **follow** the project by reacting with 👀 to this first post.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What are you doing, in a sentence or two?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it matters
+      description: Why are you doing it? What does success look like?
+  - type: input
+    id: owner
+    attributes:
+      label: Owner
+      description: GitHub username of the person responsible for weekly updates. Leave blank if it's you.
+      placeholder: "@username"
+  - type: input
+    id: contributors
+    attributes:
+      label: Contributors
+      description: GitHub usernames, separated by commas.
+      placeholder: "@alice, @bob"
+  - type: input
+    id: target_date
+    attributes:
+      label: Target date
+      description: When do you expect to finish? Use YYYY-MM-DD.
+      placeholder: "2026-12-15"
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: Separated by commas.
+      placeholder: "client-x, data-platform"

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230c66e4'/><path d='M9 21l5-6 4 4 5-8' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+    <title>dG Albums</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/marked/14.1.2/marked.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="#/" class="brand">dG Albums</a>
+        <nav class="nav">
+          <a href="#/" data-nav="updates">Updates</a>
+          <a href="#/projects" data-nav="projects">Projects</a>
+          <a href="#/people" data-nav="people">People</a>
+        </nav>
+        <div class="topbar-actions" id="topbar-actions" hidden>
+          <select id="me" aria-label="Viewing as"></select>
+          <a class="btn btn-primary" id="new-project" target="_blank" rel="noreferrer">New project</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container" id="app">
+      <p class="muted">Loading…</p>
+    </main>
+
+    <footer class="footer container" id="footer"></footer>
+  </body>
+</html>

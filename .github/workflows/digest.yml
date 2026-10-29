@@ -1,0 +1,35 @@
+name: Weekly digest
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 08:00 SAST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Show the emails in the run summary instead of sending them
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save --no-audit --no-fund nodemailer@6
+      - run: node scripts/digest.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+          PEOPLE_EMAILS: ${{ secrets.PEOPLE_EMAILS }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}

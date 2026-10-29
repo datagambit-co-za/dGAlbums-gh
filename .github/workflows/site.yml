@@ -1,0 +1,73 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  issues:
+    types: [opened, edited, closed, reopened, deleted, labeled, unlabeled]
+  issue_comment:
+    types: [created, edited, deleted]
+  schedule:
+    # Reactions don't trigger workflows, so refresh hourly to pick them up.
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pages: write
+  id-token: write
+
+jobs:
+  process-update:
+    if: >-
+      github.event_name == 'issues' &&
+      (github.event.action == 'opened' || github.event.action == 'edited') &&
+      github.event.issue.state == 'open' &&
+      contains(github.event.issue.labels.*.name, 'status-update')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/process-update.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    needs: process-update
+    if: ${{ !cancelled() && needs.process-update.result != 'failure' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pages-build
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/ensure-labels.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: node scripts/build-data.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

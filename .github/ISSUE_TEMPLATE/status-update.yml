@@ -1,0 +1,47 @@
+name: Status update
+description: Post the weekly status update for a project.
+labels: [status-update]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tip: use the **Post update** button on the project page in dG Albums and the project is filled in for you.
+        After you submit, the bot links the update to the project and closes this issue. Comments and reactions on it still show on the site.
+  - type: input
+    id: project
+    attributes:
+      label: Project
+      description: The project's issue number.
+      placeholder: "#12"
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options:
+        - On track
+        - At risk
+        - Off track
+        - Paused
+        - Done
+    validations:
+      required: true
+  - type: textarea
+    id: update
+    attributes:
+      label: Update
+      description: What happened this week? Keep it short and readable.
+    validations:
+      required: true
+  - type: textarea
+    id: next
+    attributes:
+      label: Next steps
+      description: What's coming next? Any blockers or asks?
+  - type: input
+    id: target_date
+    attributes:
+      label: New target date
+      description: Only if the target date changes. Use YYYY-MM-DD.
+      placeholder: "2026-12-15"
