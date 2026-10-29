@@ -20,6 +20,12 @@ body:
       label: Why it matters
       description: Why are you doing it? What does success look like?
   - type: input
+    id: client
+    attributes:
+      label: Client
+      description: The client's name exactly as on the Clients page, or its issue number. Leave blank for internal projects.
+      placeholder: "Acme Mining"
+  - type: input
     id: owner
     attributes:
       label: Owner

@@ -356,6 +356,23 @@ input[type='search'] {
   border-color: var(--link);
   text-decoration: none;
 }
+.client-card {
+  display: block;
+  color: var(--text);
+  margin: 0;
+}
+.client-card:hover {
+  border-color: var(--link);
+  text-decoration: none;
+}
+.status-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12px;
+}
 .person-head {
   display: flex;
   gap: 16px;

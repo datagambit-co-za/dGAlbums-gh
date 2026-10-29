@@ -1,10 +1,11 @@
-// Reads projects, status updates, comments and reactions from GitHub Issues
+// Reads clients, projects, status updates, comments and reactions from GitHub Issues
 // and writes site/data.json for the site. Also used by the reminder and digest jobs.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createClient, requireRepo } from './lib/github.mjs';
 import {
+  CLIENT_FIELDS,
   PROJECT_FIELDS,
   UPDATE_FIELDS,
   normalizeStatus,
@@ -13,6 +14,7 @@ import {
   parseLogins,
   parseProjectRef,
   parseTags,
+  parseWebsite,
 } from './lib/forms.mjs';
 import { createAllowList, loadPeople } from './lib/people.mjs';
 
@@ -61,11 +63,38 @@ export async function collectData({ repo = requireRepo(), now = new Date() } = {
   }
   for (const list of commentsByIssue.values()) list.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 
+  const clients = issues
+    .filter(i => hasLabel(i, 'client'))
+    .map(issue => {
+      seen(issue.user);
+      const f = parseForm(issue.body, CLIENT_FIELDS);
+      return {
+        number: issue.number,
+        title: issue.title,
+        url: issue.html_url,
+        state: issue.state,
+        createdAt: issue.created_at,
+        lead: parseLogins(f.client_lead)[0] ?? null,
+        about: f.about ?? '',
+        website: parseWebsite(f.website),
+        reactions: reactionCounts(issue.reactions),
+        comments: commentsByIssue.get(issue.number) ?? [],
+      };
+    });
+  const clientsByNumber = new Map(clients.map(c => [c.number, c]));
+  const clientsByName = new Map(clients.map(c => [c.title.trim().toLowerCase(), c]));
+  // A project's Client field holds the client's name or its issue number.
+  const resolveClient = ref => {
+    if (!ref) return null;
+    return clientsByNumber.get(parseProjectRef(ref)) ?? clientsByName.get(ref.trim().toLowerCase()) ?? null;
+  };
+
   const projects = [];
   for (const issue of issues.filter(i => hasLabel(i, 'project'))) {
     seen(issue.user);
     const f = parseForm(issue.body, PROJECT_FIELDS);
     const owner = parseLogins(f.owner)[0] ?? issue.user.login;
+    const client = resolveClient(f.client);
     // Following = reacting with 👀 to the project's first post.
     const eyes = await api.paginate(`/repos/${repo}/issues/${issue.number}/reactions?content=eyes`);
     eyes.forEach(r => seen(r.user));
@@ -78,6 +107,9 @@ export async function collectData({ repo = requireRepo(), now = new Date() } = {
       createdAt: issue.created_at,
       closedAt: issue.closed_at,
       author: issue.user.login,
+      client: client?.number ?? null,
+      // What was typed when it doesn't match a client, so the site can still show it.
+      clientRef: client ? '' : (f.client ?? ''),
       owner,
       contributors: parseLogins(f.contributors).filter(l => l.toLowerCase() !== owner.toLowerCase()),
       watchers: eyes.map(r => r.user?.login).filter(Boolean),
@@ -137,11 +169,12 @@ export async function collectData({ repo = requireRepo(), now = new Date() } = {
       (!latest || now - Date.parse(latest.createdAt) > UPDATE_DUE_AFTER_DAYS * DAY);
   }
 
-  // Everyone in config/people.json, plus anyone the projects mention.
+  // Everyone in config/people.json, plus anyone the projects and clients mention.
   const people = new Map(configured.map(p => [p.login.toLowerCase(), { ...p }]));
   const mentioned = [
     ...projects.flatMap(p => [p.owner, ...p.contributors]),
     ...updates.map(u => u.author),
+    ...clients.map(c => c.lead).filter(Boolean),
   ];
   for (const login of mentioned) {
     if (!people.has(login.toLowerCase())) people.set(login.toLowerCase(), { login, name: login });
@@ -157,6 +190,7 @@ export async function collectData({ repo = requireRepo(), now = new Date() } = {
     siteUrl: siteUrl(repo),
     updateDueAfterDays: UPDATE_DUE_AFTER_DAYS,
     people: [...people.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    clients: clients.sort((a, b) => a.title.localeCompare(b.title)),
     projects: projects.sort((a, b) => a.title.localeCompare(b.title)),
     updates: updates.reverse(),
   };

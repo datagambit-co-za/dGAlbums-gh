@@ -1,0 +1,28 @@
+name: New client
+description: Add a client that projects can belong to.
+labels: [client]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The issue **title** is the client's name. Edit this issue at any time to change the details.
+        Link a project to this client by putting the client's name (or this issue's number) in the project's **Client** field.
+        Close this issue when you no longer work with the client.
+
+        This repo is public: don't add contact details or anything confidential.
+  - type: textarea
+    id: about
+    attributes:
+      label: About
+      description: Who they are and what we do for them.
+  - type: input
+    id: website
+    attributes:
+      label: Website
+      placeholder: "https://example.co.za"
+  - type: input
+    id: client_lead
+    attributes:
+      label: Client lead
+      description: GitHub username of the dataGambit person who looks after this client.
+      placeholder: "@username"

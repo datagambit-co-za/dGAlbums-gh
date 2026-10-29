@@ -6,8 +6,9 @@
 //
 // Only known labels start a new field, so a "### " heading inside a value stays part of it.
 
-export const PROJECT_FIELDS = ['summary', 'why_it_matters', 'owner', 'contributors', 'target_date', 'tags'];
+export const PROJECT_FIELDS = ['summary', 'why_it_matters', 'client', 'owner', 'contributors', 'target_date', 'tags'];
 export const UPDATE_FIELDS = ['project', 'status', 'update', 'next_steps', 'new_target_date'];
+export const CLIENT_FIELDS = ['about', 'website', 'client_lead'];
 
 export const STATUSES = ['on-track', 'at-risk', 'off-track', 'paused', 'done'];
 
@@ -52,6 +53,18 @@ export function parseProjectRef(value) {
   const v = String(value ?? '');
   const m = v.match(/issues\/(\d+)/) || v.match(/^\s*#?(\d+)\s*$/);
   return m ? Number(m[1]) : null;
+}
+
+// Only http(s) links, so a pasted "javascript:" URL can't end up on the site.
+export function parseWebsite(value) {
+  const v = (value ?? '').trim();
+  if (!v) return null;
+  const url = /^https?:\/\//i.test(v) ? v : `https://${v}`;
+  try {
+    return new URL(url).href;
+  } catch {
+    return null;
+  }
 }
 
 export function normalizeStatus(value) {

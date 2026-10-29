@@ -4,6 +4,7 @@ import { createClient, requireRepo } from './lib/github.mjs';
 const LABELS = [
   { name: 'project', color: '0c66e4', description: 'A project tracked in dG Albums' },
   { name: 'status-update', color: '22a06b', description: 'A weekly status update' },
+  { name: 'client', color: '8f7ee7', description: 'A client that projects belong to' },
 ];
 
 const repo = requireRepo();

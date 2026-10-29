@@ -1,5 +1,6 @@
 // dG Albums: renders data.json (built from GitHub Issues by scripts/build-data.mjs).
-// Plain JavaScript with hash routing: #/, #/projects, #/projects/12, #/people, #/people/login.
+// Plain JavaScript with hash routing: #/, #/projects, #/projects/12, #/clients, #/clients/7,
+// #/people, #/people/login.
 
 const STATUS = {
   'on-track': { label: 'On track', order: 3 },
@@ -30,7 +31,7 @@ const app = document.getElementById('app');
 let data = null;
 let me = readMe();
 let feedScope = 'following';
-const filters = { query: '', status: '', tag: '', followingOnly: false, showClosed: false };
+const filters = { query: '', status: '', client: '', tag: '', followingOnly: false, showClosed: false };
 
 // ---------- helpers ----------
 
@@ -93,6 +94,8 @@ function links() {
   return {
     repo: base,
     newProject: `${base}/issues/new?template=project.yml`,
+    newClient: `${base}/issues/new?template=client.yml`,
+    newClientProject: client => `${base}/issues/new?${new URLSearchParams({ template: 'project.yml', client: client.title })}`,
     postUpdate: project =>
       `${base}/issues/new?${new URLSearchParams({
         template: 'status-update.yml',
@@ -121,6 +124,13 @@ function avatarStack(logins, max = 6) {
     .join('');
   const more = logins.length > max ? `<span class="avatar-more">+${logins.length - max}</span>` : '';
   return `<span class="avatar-stack">${shown}${more}</span>`;
+}
+
+// The project's client as a link, or the unmatched text from its Client field.
+function clientOf(project) {
+  const client = data.clientsByNumber.get(project.client);
+  if (client) return `<a href="#/clients/${client.number}">${esc(client.title)}</a>`;
+  return project.clientRef ? `<span class="muted" title="No client with this name">${esc(project.clientRef)}</span>` : '';
 }
 
 const timeAgo = iso => `<time datetime="${esc(iso)}" title="${esc(formatDateTime(iso))}">${esc(relativeTime(iso))}</time>`;
@@ -160,7 +170,13 @@ function updateCard(u, showProject = false) {
   const dateChanged = u.targetDate && u.targetDate !== u.previousTargetDate;
   return `<article class="card update">
     <header class="update-head">
-      ${showProject ? `<a href="#/projects/${project.number}" class="update-project">${esc(project.title)}</a>` : ''}
+      ${
+        showProject
+          ? `<div><a href="#/projects/${project.number}" class="update-project">${esc(project.title)}</a>${
+              clientOf(project) ? `<div class="small muted">${clientOf(project)}</div>` : ''
+            }</div>`
+          : ''
+      }
       <div class="update-status">${pill(u.status)}${statusChanged ? `<span class="muted small">changed from ${pill(u.previousStatus)}</span>` : ''}</div>
       <div class="meta">${personLink(u.author, 20)}${external(u.url, timeAgo(u.createdAt), 'muted')}</div>
     </header>
@@ -250,6 +266,15 @@ function projectsPage() {
         ${Object.entries(STATUS).map(([key, s]) => option(key, s.label, filters.status === key)).join('')}
       </select>
       ${
+        data.clients.length
+          ? `<select data-filter="client" aria-label="Client">${option('', 'All clients', !filters.client)}${option(
+              'none',
+              'No client',
+              filters.client === 'none',
+            )}${data.clients.map(c => option(String(c.number), c.title, filters.client === String(c.number))).join('')}</select>`
+          : ''
+      }
+      ${
         tagOptions.length
           ? `<select data-filter="tag" aria-label="Tag">${option('', 'All tags', !filters.tag)}${tagOptions
               .map(t => option(t, t, filters.tag === t))
@@ -262,23 +287,34 @@ function projectsPage() {
     <div id="projects-table">${projectsTable()}</div>`;
 }
 
+const matchesClient = (p, filter) =>
+  !filter || (filter === 'none' ? p.client === null && !p.clientRef : String(p.client) === filter);
+
 function projectsTable() {
   const q = filters.query.toLowerCase();
   const projects = data.projects
     .filter(p => filters.showClosed || isActive(p))
     .filter(p => !filters.status || p.status === filters.status)
+    .filter(p => matchesClient(p, filters.client))
     .filter(p => !filters.tag || p.tags.includes(filters.tag))
     .filter(p => !filters.followingOnly || !me || isFollower(p, me))
-    .filter(p => !q || `${p.title} ${p.summary} ${p.owner}`.toLowerCase().includes(q))
-    .sort((a, b) => STATUS[a.status].order - STATUS[b.status].order || a.title.localeCompare(b.title));
-
+    .filter(p => {
+      const client = data.clientsByNumber.get(p.client)?.title ?? p.clientRef;
+      return !q || `${p.title} ${p.summary} ${p.owner} ${client}`.toLowerCase().includes(q);
+    });
   if (!projects.length) return empty('No projects match.');
+  return projectRows(projects);
+}
+
+function projectRows(projects, { showClient = true } = {}) {
+  const sorted = [...projects].sort((a, b) => STATUS[a.status].order - STATUS[b.status].order || a.title.localeCompare(b.title));
   return `<div class="table-wrap"><table class="table">
-    <thead><tr><th>Project</th><th>Status</th><th>Owner</th><th>Target date</th><th>Last update</th></tr></thead>
-    <tbody>${projects
+    <thead><tr><th>Project</th>${showClient ? '<th>Client</th>' : ''}<th>Status</th><th>Owner</th><th>Target date</th><th>Last update</th></tr></thead>
+    <tbody>${sorted
       .map(
         p => `<tr>
           <td><a href="#/projects/${p.number}" class="strong">${esc(p.title)}</a>${tags(p.tags)}</td>
+          ${showClient ? `<td>${clientOf(p) || '<span class="muted">–</span>'}</td>` : ''}
           <td>${pill(p.status)}</td>
           <td>${personLink(p.owner)}</td>
           <td>${targetDateCell(p)}</td>
@@ -319,6 +355,7 @@ function projectPage(number) {
         ${external(p.url, following ? 'Following 👀' : 'Follow (react 👀)', 'btn btn-block')}
         ${external(p.url, 'Edit details on GitHub', 'btn btn-block')}
         <dl class="facts">
+          ${clientOf(p) ? `<dt>Client</dt><dd>${clientOf(p)}</dd>` : ''}
           <dt>Owner</dt><dd>${personLink(p.owner)}</dd>
           ${p.contributors.length ? `<dt>Contributors</dt><dd class="stack">${p.contributors.map(l => personLink(l)).join('')}</dd>` : ''}
           <dt>Target date</dt><dd>${targetDateCell(p)}</dd>
@@ -330,6 +367,78 @@ function projectPage(number) {
       </div>
     </aside>
   </div>`;
+}
+
+function clientsPage() {
+  const card = c => {
+    const projects = data.projectsByClient.get(c.number) ?? [];
+    const active = projects.filter(isActive);
+    const counts = Object.keys(STATUS)
+      .map(s => [s, active.filter(p => p.status === s).length])
+      .filter(([, n]) => n > 0)
+      .map(([s, n]) => `${pill(s)} ${n}`)
+      .join(' ');
+    return `<a href="#/clients/${c.number}" class="card client-card">
+      <div class="strong">${esc(c.title)}</div>
+      <div class="muted small">${active.length} active project${active.length === 1 ? '' : 's'}${
+        projects.length > active.length ? ` · ${projects.length - active.length} completed` : ''
+      }</div>
+      ${counts ? `<div class="status-counts">${counts}</div>` : ''}
+    </a>`;
+  };
+  const current = data.clients.filter(c => c.state === 'open');
+  const former = data.clients.filter(c => c.state !== 'open');
+
+  return `<div class="page-head">
+      <h1>Clients</h1>
+      ${external(links().newClient, 'New client', 'btn')}
+    </div>
+    ${current.length ? `<div class="people-grid">${current.map(card).join('')}</div>` : empty('No clients yet. Add one with <strong>New client</strong>.')}
+    ${former.length ? `<h2 class="section-title">Former clients</h2><div class="people-grid">${former.map(card).join('')}</div>` : ''}`;
+}
+
+function clientPage(number) {
+  const c = data.clientsByNumber.get(number);
+  if (!c) return '<p>Client not found.</p>';
+  const projects = data.projectsByClient.get(c.number) ?? [];
+  const active = projects.filter(isActive);
+  const completed = projects.filter(p => !isActive(p));
+  const projectNumbers = new Set(projects.map(p => p.number));
+  const updates = data.updates.filter(u => projectNumbers.has(u.project)).slice(0, 10);
+
+  return `<div class="detail-head">
+      <span class="muted small">#${c.number}</span>
+      <h1>${esc(c.title)}</h1>
+      ${c.state === 'open' ? '' : '<div class="detail-status"><span class="pill">Former client</span></div>'}
+    </div>
+    <div class="detail">
+      <div class="detail-main">
+        <section class="card">
+          <h3 class="subhead">About</h3>
+          ${c.about ? `<div class="markdown">${md(c.about)}</div>` : '<p class="muted">No description.</p>'}
+          ${reactions(c.reactions, c.url)}
+        </section>
+        <h2 class="section-title">Projects</h2>
+        ${active.length ? projectRows(active, { showClient: false }) : empty('No active projects.')}
+        ${completed.length ? `<h2 class="section-title">Completed</h2>${projectRows(completed, { showClient: false })}` : ''}
+        <h2 class="section-title">Recent updates</h2>
+        ${updates.length ? updates.map(u => updateCard(u, true)).join('') : empty('No updates yet.')}
+        <h2 class="section-title">Discussion</h2>
+        <div class="card">${comments(c.comments, c.url, true)}</div>
+      </div>
+      <aside class="detail-side">
+        <div class="card side-card">
+          ${c.state === 'open' ? external(links().newClientProject(c), 'New project for this client', 'btn btn-primary btn-block') : ''}
+          ${external(c.url, 'Edit details on GitHub', 'btn btn-block')}
+          <dl class="facts">
+            ${c.lead ? `<dt>Client lead</dt><dd>${personLink(c.lead)}</dd>` : ''}
+            ${c.website ? `<dt>Website</dt><dd>${external(c.website, esc(c.website.replace(/^https?:\/\/|\/$/g, '')))}</dd>` : ''}
+            <dt>Projects</dt><dd>${active.length} active, ${completed.length} completed</dd>
+            <dt>Added</dt><dd>${timeAgo(c.createdAt)}</dd>
+          </dl>
+        </div>
+      </aside>
+    </div>`;
 }
 
 function peoplePage() {
@@ -397,6 +506,12 @@ function render() {
   } else if ((m = path.match(/^\/projects\/(\d+)$/))) {
     section = 'projects';
     html = projectPage(Number(m[1]));
+  } else if (path === '/clients') {
+    section = 'clients';
+    html = clientsPage();
+  } else if ((m = path.match(/^\/clients\/(\d+)$/))) {
+    section = 'clients';
+    html = clientPage(Number(m[1]));
   } else if (path === '/people') {
     section = 'people';
     html = peoplePage();
@@ -436,8 +551,18 @@ function index(raw) {
     if (!updatesByProject.has(u.project)) updatesByProject.set(u.project, []);
     updatesByProject.get(u.project).push(u);
   }
+  const clients = raw.clients ?? [];
+  const projectsByClient = new Map();
+  for (const p of raw.projects) {
+    if (p.client === null || p.client === undefined) continue;
+    if (!projectsByClient.has(p.client)) projectsByClient.set(p.client, []);
+    projectsByClient.get(p.client).push(p);
+  }
   return {
     ...raw,
+    clients,
+    clientsByNumber: new Map(clients.map(c => [c.number, c])),
+    projectsByClient,
     projectsByNumber: new Map(raw.projects.map(p => [p.number, p])),
     peopleByLogin: new Map(raw.people.map(p => [p.login.toLowerCase(), p])),
     updatesByProject,

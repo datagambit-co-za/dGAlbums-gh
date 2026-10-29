@@ -4,9 +4,62 @@
   "siteUrl": "https://datagambit-co-za.github.io/dGAlbums-gh/",
   "updateDueAfterDays": 5,
   "people": [
-    { "login": "octocat", "name": "Thandi Mokoena", "team": "Data Engineering", "avatar": "https://github.com/octocat.png?size=96" },
-    { "login": "hubot", "name": "Pieter van Wyk", "team": "Analytics", "avatar": "https://github.com/hubot.png?size=96" },
-    { "login": "monalisa", "name": "Lerato Dlamini", "team": "Client Delivery", "avatar": "https://github.com/monalisa.png?size=96" }
+    {
+      "login": "octocat",
+      "name": "Thandi Mokoena",
+      "team": "Data Engineering",
+      "avatar": "https://github.com/octocat.png?size=96"
+    },
+    {
+      "login": "hubot",
+      "name": "Pieter van Wyk",
+      "team": "Analytics",
+      "avatar": "https://github.com/hubot.png?size=96"
+    },
+    {
+      "login": "monalisa",
+      "name": "Lerato Dlamini",
+      "team": "Client Delivery",
+      "avatar": "https://github.com/monalisa.png?size=96"
+    }
+  ],
+  "clients": [
+    {
+      "number": 7,
+      "title": "Acme Mining",
+      "url": "https://github.com/datagambit-co-za/dGAlbums-gh/issues/7",
+      "state": "open",
+      "createdAt": "2026-08-01T09:00:00Z",
+      "lead": "octocat",
+      "about": "Mid-size mining group. We run their **analytics platform** and churn modelling.",
+      "website": "https://example.com/",
+      "reactions": {},
+      "comments": []
+    },
+    {
+      "number": 8,
+      "title": "Karoo Retail",
+      "url": "https://github.com/datagambit-co-za/dGAlbums-gh/issues/8",
+      "state": "open",
+      "createdAt": "2026-09-10T09:00:00Z",
+      "lead": "monalisa",
+      "about": "Retail chain; quarterly board reporting.",
+      "website": null,
+      "reactions": {},
+      "comments": []
+    },
+    {
+      "number": 9,
+      "title": "Fynbos Logistics",
+      "url": "https://github.com/datagambit-co-za/dGAlbums-gh/issues/9",
+      "state": "closed",
+      "createdAt": "2025-02-10T09:00:00Z",
+      "lead": null,
+      "about": "",
+      "website": null,
+      "reactions": {},
+      "comments": []
+    }
   ],
   "projects": [
     {
@@ -18,22 +71,45 @@
       "createdAt": "2026-09-01T09:00:00Z",
       "closedAt": null,
       "author": "octocat",
+      "client": 7,
+      "clientRef": "",
       "owner": "octocat",
-      "contributors": ["hubot"],
-      "watchers": ["monalisa"],
+      "contributors": [
+        "hubot"
+      ],
+      "watchers": [
+        "monalisa"
+      ],
       "summary": "Retrain the churn model on the new feature store and ship weekly scores to the CRM.",
       "why": "The current model is 18 months old and has drifted. Account managers want a ranked call list every Monday.",
-      "tags": ["ml", "client-a"],
+      "tags": [
+        "ml",
+        "client-a"
+      ],
       "initialTargetDate": "2026-11-15",
-      "reactions": { "+1": 2, "eyes": 1 },
+      "reactions": {
+        "+1": 2,
+        "eyes": 1
+      },
       "comments": [
-        { "id": 101, "author": "monalisa", "createdAt": "2026-09-02T10:00:00Z", "url": "https://github.com/datagambit-co-za/dGAlbums-gh/issues/1#issuecomment-101", "body": "Client A asked if we can include **product usage** features too.", "reactions": {} }
+        {
+          "id": 101,
+          "author": "monalisa",
+          "createdAt": "2026-09-02T10:00:00Z",
+          "url": "https://github.com/datagambit-co-za/dGAlbums-gh/issues/1#issuecomment-101",
+          "body": "Client A asked if we can include **product usage** features too.",
+          "reactions": {}
+        }
       ],
       "targetDate": "2026-11-29",
       "updateCount": 2,
       "lastUpdateAt": "2026-10-24T14:00:00Z",
       "status": "at-risk",
-      "followers": ["octocat", "hubot", "monalisa"],
+      "followers": [
+        "octocat",
+        "hubot",
+        "monalisa"
+      ],
       "dueForUpdate": false
     },
     {
@@ -45,12 +121,18 @@
       "createdAt": "2026-08-15T09:00:00Z",
       "closedAt": null,
       "author": "hubot",
+      "client": null,
+      "clientRef": "",
       "owner": "hubot",
       "contributors": [],
-      "watchers": ["octocat"],
+      "watchers": [
+        "octocat"
+      ],
       "summary": "Move the remaining pipelines off the legacy warehouse.",
       "why": "",
-      "tags": ["platform"],
+      "tags": [
+        "platform"
+      ],
       "initialTargetDate": "2026-10-20",
       "reactions": {},
       "comments": [],
@@ -58,7 +140,10 @@
       "updateCount": 1,
       "lastUpdateAt": "2026-10-10T12:00:00Z",
       "status": "on-track",
-      "followers": ["hubot", "octocat"],
+      "followers": [
+        "hubot",
+        "octocat"
+      ],
       "dueForUpdate": true
     },
     {
@@ -70,12 +155,16 @@
       "createdAt": "2026-10-20T09:00:00Z",
       "closedAt": null,
       "author": "monalisa",
+      "client": 8,
+      "clientRef": "",
       "owner": "monalisa",
       "contributors": [],
       "watchers": [],
       "summary": "A one-page dashboard for the Q4 board pack.",
       "why": "",
-      "tags": ["client-b"],
+      "tags": [
+        "client-b"
+      ],
       "initialTargetDate": null,
       "reactions": {},
       "comments": [],
@@ -83,7 +172,9 @@
       "updateCount": 0,
       "lastUpdateAt": null,
       "status": "pending",
-      "followers": ["monalisa"],
+      "followers": [
+        "monalisa"
+      ],
       "dueForUpdate": true
     }
   ],
@@ -98,9 +189,21 @@
       "body": "Feature store backfill is slower than expected. **2 of 5** source tables are done.\n\n- Pieter is profiling the slow joins\n- Asked the client for read replicas",
       "next": "Finish the backfill, then retrain.",
       "targetDate": "2026-11-29",
-      "reactions": { "eyes": 1, "+1": 1 },
+      "reactions": {
+        "eyes": 1,
+        "+1": 1
+      },
       "comments": [
-        { "id": 201, "author": "hubot", "createdAt": "2026-10-24T15:30:00Z", "url": "https://github.com/datagambit-co-za/dGAlbums-gh/issues/6#issuecomment-201", "body": "Found the slow join, fix in review.", "reactions": { "rocket": 2 } }
+        {
+          "id": 201,
+          "author": "hubot",
+          "createdAt": "2026-10-24T15:30:00Z",
+          "url": "https://github.com/datagambit-co-za/dGAlbums-gh/issues/6#issuecomment-201",
+          "body": "Found the slow join, fix in review.",
+          "reactions": {
+            "rocket": 2
+          }
+        }
       ],
       "previousStatus": "on-track",
       "previousTargetDate": "2026-11-15"
@@ -115,7 +218,9 @@
       "body": "Feature store schema agreed with the client. Backfill started.",
       "next": "",
       "targetDate": null,
-      "reactions": { "hooray": 3 },
+      "reactions": {
+        "hooray": 3
+      },
       "comments": [],
       "previousStatus": null,
       "previousTargetDate": "2026-11-15"
