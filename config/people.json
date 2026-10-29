@@ -2,6 +2,7 @@
   "_help": "The dataGambit team. Only issues, comments and updates from these GitHub users appear on the site (org members and repo collaborators are also trusted). Email addresses are NOT stored here because the repo is public: put them in the PEOPLE_EMAILS repository secret instead.",
   "people": [
     { "login": "antoinette-source", "name": "Antoinette Hattingh" },
+    { "login": "paulg-dg", "name": "Paul Grobler" } ,
     { "login": "estie26", "name": "Estie Boshoff" }
   ]
 }
